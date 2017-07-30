@@ -6,14 +6,16 @@ class Enemy:
     strength = 0
     oppStrength = 0
     numPot = 2
+    dodgeChance = 0
+    heavyChance = 0
 
     def attack(self):
         self.strength = random.randrange(10, 20)
 
     def heavy(self):
-        chance = random.randrange(3)
-        if chance > 1:
-            self.strength = 50
+        self.heavyChance = random.randrange(3)
+        if self.heavyChance > 1:
+            self.strength = 40
         else:
             self.strength = 0
             print("The enemy's heavy attack has missed!")
@@ -22,13 +24,15 @@ class Enemy:
         self.hp -= self.oppStrength
 
     def dodge(self):
-        chance = random.randrange(4)  # increase range to make success more likely
-        if chance == 2:
+        self.dodgeChance = random.randrange(4)  # increase range to make success more likely
+        if self.dodgeChance == 2:
             self.hp -= self.oppStrength
             print("The enemy has failed to dodge.")
-        elif chance == 1:
+            print("You dealt {} damage".format(self.oppStrength))
+        elif self.dodgeChance == 1:
             self.hp -= int(round(self.oppStrength / 3))
             print("The enemy braced themselves for impact.")
+            print("You dealt {} damage".format(int(round(self.oppStrength / 3))))
         else:
             print("The enemy has dodged your attack.")
 
@@ -46,10 +50,9 @@ class Hero:
     def heavy(self):
         chance = random.randrange(3)
         if chance > 1:
-            self.strength = 50
+            self.strength = 40
         else:
             self.strength = 0
-            print("Your heavy attack has missed!")
 
     def damage(self):
         self.hp -= self.oppStrength
@@ -59,7 +62,7 @@ class Hero:
         if chance == 2:
             self.hp -= self.oppStrength
             print("You have failed to dodge the enemy's attack.")
-            print("dodge..You have taken {} damage".format(self.oppStrength))
+            print("You have taken {} damage".format(self.oppStrength))
         elif chance == 1:
             self.hp -= (int(round(self.oppStrength / 3)))
             print("You have braced yourself for impact.")
@@ -74,21 +77,19 @@ class HeroActions:
         enemy.oppStrength = hero.strength
         enemy.damage()
         print("You dealt {} damage".format(hero.strength))
-        test = True
-        return test
 
     def dodge(self):
+        hero.oppStrength = enemy.strength
         hero.dodge()
-        test = True
-        return test
 
     def heavy(self):
         hero.heavy()
         Enemy.oppStrength = hero.strength
         enemy.damage()
-        print("You dealt {} damage".format(hero.strength))
-        test = True
-        return test
+        if hero.strength > 0:
+            print("You dealt {} damage".format(hero.strength))
+        else:
+            print('Your heavy attack has missed')
 
     def potion(self):
         recovery = 100 - hero.hp
@@ -96,14 +97,12 @@ class HeroActions:
             hero.hp += 50
             hero.numPot -= 1
             print("You drank a potion to recover {} HP!".format(recovery))
-        elif hero.hp > 5 and hero.numPot >= 1:
+        elif hero.hp > 50 and hero.numPot >= 1:
             hero.hp = 100
             hero.numPot -= 1
             print("You drank a potion to recover {} HP!".format(recovery))
         else:
             print("You are out of potions.")
-        test = True
-        return test
 
 
 class EnemyActions:
@@ -111,22 +110,18 @@ class EnemyActions:
         enemy.attack()
         hero.oppStrength = enemy.strength
         hero.damage()
-        print("atk act..You have taken {} damage".format(enemy.strength))
-        test = True
-        return test
+        print("You have taken {} damage".format(enemy.strength))
 
     def dodge(self):
+        enemy.oppStrength = hero.strength
         enemy.dodge()
-        test = True
-        return test
 
     def heavy(self):
         enemy.heavy()
         hero.oppStrength = enemy.strength
         hero.damage()
-        print("hvy act..You have taken {} damage".format(enemy.strength))
-        test = True
-        return test
+        if enemy.strength > 0:
+            print("You have taken {} damage".format(enemy.strength))
 
     def potion(self):
         recovery = 100 - enemy.hp
@@ -139,9 +134,7 @@ class EnemyActions:
             enemy.numPot -= 1
             print("The enemy drank a potion to recover {} HP!".format(recovery))
         else:
-            print("You are out of potions.")
-        test = True
-        return test
+            print("The enemy is out of potions.")
 
 
 enemy = Enemy()
@@ -169,65 +162,85 @@ def enemy_input():
 
 
 def enemy_decision(action, num):
-    if num < 50 and (action != "d" or action != "D"):
-        EnemyActions.attack()
-    if 50 <= num < 76:
-        EnemyActions.heavy()
-    if 76 <= num < 86:
-        if action == "a" or action == "A":
-            hero.attack()
-            EnemyActions.dodge()
-        if action == "d" or action == "D":
-            hero.heavy()
-            if hero.strength != 0:
-                EnemyActions.dodge()
-    if num >= 86:
-        if enemy.hp <= 80 and enemy.numPot != 0:
-            EnemyActions.potion()
-        if enemy.hp > 80 and (action != "d" or action != "D"):
+    if num < 50:
+        if action != "d" and action != "D":
             EnemyActions.attack()
+    elif 50 <= num < 76:
+        if action != "d" and action != "D":
+            EnemyActions.heavy()
+    elif num >= 86:
+        if enemy.hp <= 80 and enemy.numPot > 0:
+            EnemyActions.potion()
+        elif enemy.hp > 80:
+            if action != "d" and action != "D":
+                EnemyActions.attack()
     return num
 
 
 def take_action(action, num):
     print(".\n.\n.")
-    test = False
     if action == "a" or action == "A":
-        test = HeroActions.attack()
-    if action == "h" or action == "H":
-        test = HeroActions.heavy()
-    if action == "d" or action == "D":
+        if 76 <= num < 86:
+            hero.attack()
+            EnemyActions.dodge()
+        else:
+            HeroActions.attack()
+    elif action == "h" or action == "H":
+        if 76 <= num < 86:
+            hero.heavy()
+            if hero.chance > 1:
+                EnemyActions.dodge()
+            else:
+                print("Your heavy attack has missed..")
+        else:
+            HeroActions.heavy()
+    elif action == "d" or action == "D":
         if num < 50 or (num >= 86 and enemy.hp > 80):
             enemy.attack()
-            test = HeroActions.dodge()
+            HeroActions.dodge()
         if 50 <= num < 76:
             enemy.heavy()
-            if enemy.strength != 0:
-                test = HeroActions.dodge()
-            if enemy.strength == 0:
+            if enemy.heavyChance > 1:
+                HeroActions.dodge()
+            else:
                 print("It seems you didn't need to dodge that attack.")
-                test = True
-    if action == "p" or action == "P":
-        test = HeroActions.potion()
-    if test is False:
+    elif action == "p" or action == "P":
+        HeroActions.potion()
+    else:
         print("Nothing Happens...")
     return action
 
+def healthbar():
+    print("[////////////////////]          [////////////////////]")
 
 def menu():
-    print("\n")
-    enemy_hp()
-    hero_hp()
-    print("What would you like to do..?\n")
+    print("\nYour HP: {}/100                Enemy HP: {}/100".format(hero.hp, enemy.hp))
+    healthbar()
+    print("\nWhat would you like to do..?")
     print("(a) = attack            (d) = dodge")
     print("(h) = heavy attack      (p) = potion")
+
+
+def results():
+    if hero.hp <= 0 < enemy.hp:
+        print("You have been defeated..\n\nGAME OVER")
+    if enemy.hp <= 0 < hero.hp:
+        print("Congratulations you have defeated the enemy!!")
 
 
 while enemy.hp > 0 and hero.hp > 0:
     menu()
     num = enemy_input()
     action = user_input()
-    print(num, str(action))
-    take_action(action, num)
-    enemy_decision(action, num)
-    print("_____________________________________________")
+    if hero.hp > 0:
+        if enemy.hp < 0:
+            results()
+        else:
+            take_action(action, num)
+    if enemy.hp > 0:
+        if hero.hp < 0:
+            results()
+        else:
+            enemy_decision(action, num)
+    print("______________________________________________________")
+
