@@ -8,6 +8,53 @@ class Enemy:
     numPot = 2
     dodgeChance = 0
     heavyChance = 0
+    bar = "[////////////////////]"
+
+    def healthbar(self):
+        if self.hp == 100:
+            self.bar = "[////////////////////]"
+        elif self.hp >= 95:
+            self.bar = "[////////////////////]"
+        elif self.hp >= 90:
+            self.bar = "[/////////////////// ]"
+        elif self.hp >= 85:
+            self.bar = "[//////////////////  ]"
+        elif self.hp >= 80:
+            self.bar = "[/////////////////   ]"
+        elif self.hp >= 75:
+            self.bar = "[////////////////    ]"
+        elif self.hp >= 70:
+            self.bar = "[///////////////     ]"
+        elif self.hp >= 65:
+            self.bar = "[//////////////      ]"
+        elif self.hp >= 60:
+            self.bar = "[/////////////       ]"
+        elif self.hp >= 55:
+            self.bar = "[////////////        ]"
+        elif self.hp >= 50:
+            self.bar = "[///////////         ]"
+        elif self.hp >= 45:
+            self.bar = "[//////////          ]"
+        elif self.hp >= 40:
+            self.bar = "[/////////           ]"
+        elif self.hp >= 35:
+            self.bar = "[////////            ]"
+        elif self.hp >= 30:
+            self.bar = "[///////             ]"
+        elif self.hp >= 25:
+            self.bar = "[//////              ]"
+        elif self.hp >= 20:
+            self.bar = "[/////               ]"
+        elif self.hp >= 15:
+            self.bar = "[////                ]"
+        elif self.hp >= 10:
+            self.bar = "[///                 ]"
+        elif self.hp <= 5:
+            self.bar = "[//                  ]"
+        elif self.hp > 0:
+            self.bar = "[/                   ]"
+        elif self.hp <= 0:
+            self.bar = "[                    ]"
 
     def attack(self):
         self.strength = random.randrange(10, 20)
@@ -43,6 +90,53 @@ class Hero:
     strength = 0
     oppStrength = 0
     numPot = 2
+    bar = "[////////////////////]"
+
+    def healthbar(self):
+        if self.hp == 100:
+            self.bar = "[////////////////////]"
+        elif self.hp >= 95:
+            self.bar = "[////////////////////]"
+        elif self.hp >= 90:
+            self.bar = "[/////////////////// ]"
+        elif self.hp >= 85:
+            self.bar = "[//////////////////  ]"
+        elif self.hp >= 80:
+            self.bar = "[/////////////////   ]"
+        elif self.hp >= 75:
+            self.bar = "[////////////////    ]"
+        elif self.hp >= 70:
+            self.bar = "[///////////////     ]"
+        elif self.hp >= 65:
+            self.bar = "[//////////////      ]"
+        elif self.hp >= 60:
+            self.bar = "[/////////////       ]"
+        elif self.hp >= 55:
+            self.bar = "[////////////        ]"
+        elif self.hp >= 50:
+            self.bar = "[///////////         ]"
+        elif self.hp >= 45:
+            self.bar = "[//////////          ]"
+        elif self.hp >= 40:
+            self.bar = "[/////////           ]"
+        elif self.hp >= 35:
+            self.bar = "[////////            ]"
+        elif self.hp >= 30:
+            self.bar = "[///////             ]"
+        elif self.hp >= 25:
+            self.bar = "[//////              ]"
+        elif self.hp >= 20:
+            self.bar = "[/////               ]"
+        elif self.hp >= 15:
+            self.bar = "[////                ]"
+        elif self.hp >= 10:
+            self.bar = "[///                 ]"
+        elif self.hp <= 5:
+            self.bar = "[//                  ]"
+        elif self.hp > 0:
+            self.bar = "[/                   ]"
+        elif self.hp <= 0:
+            self.bar = "[                    ]"
 
     def attack(self):
         self.strength = random.randrange(10, 20)
@@ -96,7 +190,7 @@ class HeroActions:
         if hero.hp <= 50 and hero.numPot >= 1:
             hero.hp += 50
             hero.numPot -= 1
-            print("You drank a potion to recover {} HP!".format(recovery))
+            print("You drank a potion to recover 50 HP!".format(recovery))
         elif hero.hp > 50 and hero.numPot >= 1:
             hero.hp = 100
             hero.numPot -= 1
@@ -128,7 +222,7 @@ class EnemyActions:
         if enemy.hp <= 50 and enemy.numPot >= 1:
             enemy.hp += 50
             enemy.numPot -= 1
-            print("The enemy drank a potion to recover {} HP!".format(recovery))
+            print("The enemy drank a potion to recover 50 HP!".format(recovery))
         elif enemy.hp > 50 and enemy.numPot >= 1:
             enemy.hp = 100
             enemy.numPot -= 1
@@ -143,12 +237,9 @@ HeroActions = HeroActions()
 EnemyActions = EnemyActions()
 
 
-def enemy_hp():
-    print("Enemy HP: {}/100".format(enemy.hp))
-
-
-def hero_hp():
-    print("Your HP: {}/100".format(hero.hp))
+def healthbar():
+    hero.healthbar()
+    enemy.healthbar()
 
 
 def user_input():
@@ -178,11 +269,15 @@ def enemy_decision(action, num):
 
 
 def take_action(action, num):
-    print(".\n.\n.")
+    print(".\n.")
     if action == "a" or action == "A":
         if 76 <= num < 86:
             hero.attack()
             EnemyActions.dodge()
+        elif num >= 86:
+            if enemy.hp <= 80 and enemy.numPot > 0:
+                EnemyActions.potion()
+                HeroActions.attack()
         else:
             HeroActions.attack()
     elif action == "h" or action == "H":
@@ -192,13 +287,17 @@ def take_action(action, num):
                 EnemyActions.dodge()
             else:
                 print("Your heavy attack has missed..")
+        elif num >= 86:
+            if enemy.hp <= 80 and enemy.numPot > 0:
+                EnemyActions.potion()
+                HeroActions.attack()
         else:
             HeroActions.heavy()
     elif action == "d" or action == "D":
         if num < 50 or (num >= 86 and enemy.hp > 80):
             enemy.attack()
             HeroActions.dodge()
-        if 50 <= num < 76:
+        elif 50 <= num < 76:
             enemy.heavy()
             if enemy.heavyChance > 1:
                 HeroActions.dodge()
@@ -210,12 +309,11 @@ def take_action(action, num):
         print("Nothing Happens...")
     return action
 
-def healthbar():
-    print("[////////////////////]          [////////////////////]")
 
 def menu():
-    print("\nYour HP: {}/100                Enemy HP: {}/100".format(hero.hp, enemy.hp))
     healthbar()
+    print("\nYour HP: {}/100                 Enemy HP: {}/100".format(hero.hp, enemy.hp))
+    print("\n{}          {}".format(hero.bar, enemy.bar))
     print("\nWhat would you like to do..?")
     print("(a) = attack            (d) = dodge")
     print("(h) = heavy attack      (p) = potion")
@@ -233,14 +331,8 @@ while enemy.hp > 0 and hero.hp > 0:
     num = enemy_input()
     action = user_input()
     if hero.hp > 0:
-        if enemy.hp < 0:
-            results()
-        else:
-            take_action(action, num)
+        take_action(action, num)
     if enemy.hp > 0:
-        if hero.hp < 0:
-            results()
-        else:
-            enemy_decision(action, num)
+        enemy_decision(action, num)
     print("______________________________________________________")
-
+    results()
