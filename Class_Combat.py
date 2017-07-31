@@ -60,9 +60,9 @@ class Enemy:
         self.strength = random.randrange(10, 20)
 
     def heavy(self):
-        self.heavyChance = random.randrange(3)
-        if self.heavyChance > 1:
-            self.strength = 40
+        self.heavyChance = random.randrange(1000)
+        if self.heavyChance > 599:
+            self.strength = 45
         else:
             self.strength = 0
             print("The enemy's heavy attack has missed!")
@@ -86,7 +86,8 @@ class Enemy:
 
 class Hero:
     hp = 100
-    chance = 0
+    heavyChance = 0
+    dodgeChance = 0
     strength = 0
     oppStrength = 0
     numPot = 2
@@ -139,12 +140,12 @@ class Hero:
             self.bar = "[                    ]"
 
     def attack(self):
-        self.strength = random.randrange(10, 20)
+        self.strength = random.randrange(8, 20)
 
     def heavy(self):
-        chance = random.randrange(3)
-        if chance > 1:
-            self.strength = 40
+        self.heavyChance = random.randrange(1000)
+        if self.heavyChance > 640:
+            self.strength = 45
         else:
             self.strength = 0
 
@@ -152,12 +153,12 @@ class Hero:
         self.hp -= self.oppStrength
 
     def dodge(self):
-        chance = random.randrange(4)  # increase range to make success more likely
-        if chance == 2:
+        self.dodgeChance = random.randrange(4)  # increase range to make success more likely
+        if self.dodgeChance == 2:
             self.hp -= self.oppStrength
             print("You have failed to dodge the enemy's attack.")
             print("You have taken {} damage".format(self.oppStrength))
-        elif chance == 1:
+        elif self.dodgeChance == 1:
             self.hp -= (int(round(self.oppStrength / 3)))
             print("You have braced yourself for impact.")
             print("dodge..You have taken {}".format(int(round(self.oppStrength / 3))))
@@ -243,71 +244,93 @@ def healthbar():
 
 
 def user_input():
-    action = input()
-    return action
+    heroDecision = input()
+    return heroDecision
 
 
 def enemy_input():
-    num = random.randrange(100)
-    return num
+    a = 40
+    b = 70
+    c = 86
+    enemyDecision = random.randrange(100)
+    if enemyDecision < a:
+        if enemy.hp < 30 and enemy.numPot >= 1:
+            enemyDecision = "p"
+        else:
+            enemyDecision = "a"
+    elif a <= enemyDecision < b:
+        if enemy.hp < 30 and enemy.numPot >= 1:
+            enemyDecision = "p"
+        else:
+            enemyDecision = "h"
+    elif b <= enemyDecision < c:
+        if enemy.hp < 30 and enemy.numPot >= 1:
+            enemyDecision = "p"
+        else:
+            enemyDecision = "d"
+    elif enemyDecision >= c:
+        if enemy.hp < 80 and enemy.numPot > 0:
+            enemyDecision = "p"
+        else:
+
+            enemyDecision = "a"
+    return enemyDecision
 
 
-def enemy_decision(action, num):
-    if num < 50:
-        if action != "d" and action != "D":
+def enemy_decision(heroDecision, enemyDecision):
+    if enemyDecision is "a":
+        if heroDecision != "d" and heroDecision != "D":
             EnemyActions.attack()
-    elif 50 <= num < 76:
-        if action != "d" and action != "D":
+    elif enemyDecision is "h":
+        if heroDecision != "d" and heroDecision != "D":
             EnemyActions.heavy()
-    elif num >= 86:
-        if enemy.hp <= 80 and enemy.numPot > 0:
+    elif enemyDecision is "p":
+        if heroDecision is not "a" and heroDecision is not "A" and heroDecision is not "d" and heroDecision is not "D":
             EnemyActions.potion()
-        elif enemy.hp > 80:
-            if action != "d" and action != "D":
-                EnemyActions.attack()
-    return num
+    return enemyDecision
 
 
-def take_action(action, num):
+def take_action(heroDecision, enemyDecision):
     print(".\n.")
-    if action == "a" or action == "A":
-        if 76 <= num < 86:
+    if heroDecision == "a" or heroDecision == "A":
+        if enemyDecision is "d":
             hero.attack()
             EnemyActions.dodge()
-        elif num >= 86:
+        elif enemyDecision is "p":
             if enemy.hp <= 80 and enemy.numPot > 0:
                 EnemyActions.potion()
                 HeroActions.attack()
         else:
             HeroActions.attack()
-    elif action == "h" or action == "H":
-        if 76 <= num < 86:
+    elif heroDecision == "h" or heroDecision == "H":
+        if enemyDecision is "d":
             hero.heavy()
-            if hero.chance > 1:
+            if hero.strength is not 0:
                 EnemyActions.dodge()
             else:
                 print("Your heavy attack has missed..")
-        elif num >= 86:
-            if enemy.hp <= 80 and enemy.numPot > 0:
-                EnemyActions.potion()
-                HeroActions.attack()
+        elif enemyDecision is "p":
+            EnemyActions.potion()
+            HeroActions.heavy()
         else:
             HeroActions.heavy()
-    elif action == "d" or action == "D":
-        if num < 50 or (num >= 86 and enemy.hp > 80):
+    elif heroDecision == "d" or heroDecision == "D":
+        if enemyDecision is "a":
             enemy.attack()
             HeroActions.dodge()
-        elif 50 <= num < 76:
+        elif enemyDecision is "h":
             enemy.heavy()
-            if enemy.heavyChance > 1:
+            if enemy.strength is not 0:
                 HeroActions.dodge()
             else:
                 print("It seems you didn't need to dodge that attack.")
-    elif action == "p" or action == "P":
+        elif enemyDecision is "d":
+            print("You both dodged away from nothing.. ")
+    elif heroDecision == "p" or heroDecision == "P":
         HeroActions.potion()
     else:
         print("Nothing Happens...")
-    return action
+    return heroDecision
 
 
 def menu():
@@ -322,17 +345,24 @@ def menu():
 def results():
     if hero.hp <= 0 < enemy.hp:
         print("You have been defeated..\n\nGAME OVER")
-    if enemy.hp <= 0 < hero.hp:
+        return 0
+    elif enemy.hp <= 0 < hero.hp:
         print("Congratulations you have defeated the enemy!!")
+        return 1
 
 
-while enemy.hp > 0 and hero.hp > 0:
-    menu()
-    num = enemy_input()
-    action = user_input()
-    if hero.hp > 0:
-        take_action(action, num)
-    if enemy.hp > 0:
-        enemy_decision(action, num)
-    print("______________________________________________________")
-    results()
+def main():
+    while enemy.hp > 0 and hero.hp > 0:
+        menu()
+        enemyDecision = enemy_input()
+        heroDecision = user_input()
+        if hero.hp > 0:
+            take_action(heroDecision, enemyDecision)
+        if enemy.hp > 0:
+            enemy_decision(heroDecision, enemyDecision)
+        print("______________________________________________________")
+    result = results()
+    return result
+main()
+
+
